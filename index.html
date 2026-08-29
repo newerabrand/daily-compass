@@ -190,7 +190,7 @@
 
 
   <section class="section">
-    <div class="section-title"><h2>🌅 Morning — Start the day</h2><small><span id="morningCount">0/4</span> · Streak <b id="morningTaskStreak">0</b></small></div>
+    <div class="section-title"><h2>🌅 Morning — Start the day</h2><small><span id="morningCount">0/5</span> · Streak <b id="morningTaskStreak">0</b></small></div>
     <div id="morningTasks"></div>
   </section>
 
@@ -382,7 +382,7 @@ function dayNumber(){
   const b=new Date(logical+"T00:00:00");
   return Math.max(1,Math.floor((b-a)/86400000)+1);
 }
-function dayKey(){return todayIso()}
+function dayKey(){return logicalActivityDate()}
 function state(){
   const k=dayKey(); if(!db.days[k]) db.days[k]={};
   return db.days[k];
@@ -603,6 +603,7 @@ function render(){
   document.getElementById("nightTaskStreak").textContent=streakFor(night);
   renderCalories();
   document.getElementById("overallStreak").textContent=overallStreak();
+  renderDashboard();
 }
 function toast(msg){const x=document.getElementById("toast");x.textContent=msg;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),1500)}
 let energyTimerHandle=null;
