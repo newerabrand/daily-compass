@@ -139,6 +139,22 @@
   @keyframes welcomeOut{to{opacity:0;visibility:hidden}}
 
 
+
+  /* Cloud Sync — polished authentication card */
+  .cloud-card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .cloud-card-icon{width:40px;height:40px;border-radius:12px;background:#eef4ff;display:grid;place-items:center;font-size:20px;flex:0 0 40px}
+  .cloud-card-copy{min-width:0}.cloud-card-copy b{display:block;font-size:15px}.cloud-card-copy span{display:block;color:var(--muted);font-size:11px;line-height:1.35;margin-top:2px}
+  .cloud-status{border:1px solid var(--line);background:#f8fafc;border-radius:11px;padding:9px 10px;color:var(--muted);font-size:11px;line-height:1.4;margin:10px 0}
+  .cloud-input{width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:10px 11px;font:inherit;margin-top:8px;outline:none}
+  .cloud-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(23,92,211,.10)}
+  .cloud-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+  .cloud-actions button{width:100%;border-radius:10px;padding:10px 9px;font-size:11px;font-weight:800}
+  .cloud-primary{background:var(--text);color:#fff}.cloud-primary:hover{opacity:.94}
+  .cloud-secondary{background:#f2f4f7;color:var(--text)}
+  .cloud-user{background:#ecfdf3;border:1px solid #abefc6;color:#067647;border-radius:11px;padding:9px 10px;font-size:11px;line-height:1.4;margin:10px 0}
+  .cloud-footnote{font-size:10px;color:var(--muted);line-height:1.45;margin-top:9px}
+  @media(max-width:480px){.cloud-actions{grid-template-columns:1fr}.cloud-input{font-size:16px}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="./manifest.json">
@@ -316,8 +332,14 @@
   </div>
 
   <div class="dash-card" id="cloudCard">
-    <h3>☁️ Cloud Sync</h3>
-    <div class="cloud-status" id="cloudStatus">Not connected. Your data is currently saved on this device.</div>
+    <div class="cloud-card-head">
+      <div class="cloud-card-icon">☁️</div>
+      <div class="cloud-card-copy">
+        <b>Cloud Sync</b>
+        <span>Securely keep your Daily Compass progress available across devices.</span>
+      </div>
+    </div>
+    <div class="cloud-status" id="cloudStatus">Not connected · Your data is currently saved on this device.</div>
     <div id="cloudAuthForm">
       <input class="cloud-input" id="cloudEmail" type="email" autocomplete="email" placeholder="Email address">
       <input class="cloud-input" id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
@@ -325,9 +347,11 @@
         <button class="cloud-primary" id="cloudSignIn" type="button">SIGN IN & SYNC</button>
         <button class="cloud-secondary" id="cloudSignUp" type="button">CREATE ACCOUNT</button>
       </div>
+      <div class="cloud-footnote">Use the same account on another device to access your synced progress.</div>
     </div>
     <div id="cloudConnected" style="display:none">
-      <div class="cloud-user" id="cloudUserEmail"></div>
+      <div class="cloud-user" id="cloudUserEmail">✓ Cloud account connected</div>
+      <div class="cloud-footnote">Your personal progress is linked to your account. Other users have separate data.</div>
       <div class="cloud-actions">
         <button class="cloud-primary" id="cloudSyncNow" type="button">SYNC NOW</button>
         <button class="cloud-secondary" id="cloudSignOut" type="button">SIGN OUT</button>
@@ -385,7 +409,15 @@ const micro = [
 ];
 
 const key="myReset_v1";
-let db=JSON.parse(localStorage.getItem(key)||'{"days":{},"microDone":0}');
+let db;
+try{
+  db=JSON.parse(localStorage.getItem(key)||'{"days":{},"microDone":0}');
+  if(!db || typeof db!=="object") throw new Error("Invalid local data");
+  if(!db.days || typeof db.days!=="object") db.days={};
+  if(typeof db.microDone!=="number") db.microDone=0;
+}catch(e){
+  db={days:{},microDone:0};
+}
 function save(){
   localStorage.setItem(key,JSON.stringify(db));
   if(window.cloudUser) scheduleCloudSync();
@@ -637,7 +669,7 @@ function completed(arr){
   return arr.reduce((n,t)=>n+(st[t[1]]?1:0),0);
 }
 function streakFor(arr){
-  let n=0, d=new Date(todayIso()+"T00:00:00");
+  let n=0, d=new Date(dayKey()+"T00:00:00");
   while(true){
     const k=iso(d), st=db.days[k]||{};
     const ok=arr.length>0 && arr.every(t=>!!st[t[1]]);
@@ -647,7 +679,7 @@ function streakFor(arr){
   return n;
 }
 function overallStreak(){
-  let n=0, d=new Date(todayIso()+"T00:00:00");
+  let n=0, d=new Date(dayKey()+"T00:00:00");
   while(true){
     const st=db.days[iso(d)]||{};
     const ok=morning.every(t=>!!st[t[1]]) && night.every(t=>!!st[t[1]]);
@@ -734,7 +766,7 @@ function formatDateShort(k){
 function renderDashboard(){
   const st=state(), mc=completed(morning), nc=completed(night);
   const total=morning.length+night.length, done=mc+nc;
-  const pct=Math.round(done/total*100);
+  const pct=total?Math.round(done/total*100):0;
   document.getElementById("dashTaskText").textContent=pct+"%";
   document.getElementById("dashTaskFill").style.width=pct+"%";
   const ms=streakFor(morning), ns=streakFor(night);
@@ -820,7 +852,7 @@ function render(){
   document.getElementById("morningCount").textContent=`${mc}/${morning.length}`;
   document.getElementById("nightCount").textContent=`${nc}/${night.length}`;
   document.getElementById("percent").textContent=Math.round(done/total*100)+"%";
-  document.getElementById("bar").style.width=(done/total*100)+"%";
+  document.getElementById("bar").style.width=(total?done/total*100:0)+"%";
   document.getElementById("morningStreak").textContent=streakFor(morning);
   document.getElementById("sleepStreak").textContent=streakFor(night);
   document.getElementById("morningTaskStreak").textContent=streakFor(morning);
