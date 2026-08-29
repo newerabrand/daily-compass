@@ -140,6 +140,7 @@
 
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="./manifest.json">
 </head>
 <body>
@@ -261,7 +262,7 @@
     <div class="progress"><div class="bar" id="bar"></div></div>
   </section>
 
-<div class="footer">Schedule changes automatically by day. Steps are assigned to the activity day, so after midnight they remain with the previous day until that day's shutdown. Your completed data is saved on this device in this prototype.</div>
+<div class="footer">Schedule changes automatically by day. Steps are assigned to the activity day, so after midnight they remain with the previous day until that day's shutdown. Your data is saved on this device and can be synced securely to your Daily Compass cloud account.</div>
 </div>
 
 <div class="energy-overlay" id="energyOverlay">
@@ -312,6 +313,26 @@
     <h3>🌙 Night Schedule</h3>
     <div class="dash-meta"><span>Current streak</span><b id="dashNightStreak">0 days</b></div>
     <div class="dash-track"><div class="dash-fill" id="dashNightFill"></div></div>
+  </div>
+
+  <div class="dash-card" id="cloudCard">
+    <h3>☁️ Cloud Sync</h3>
+    <div class="cloud-status" id="cloudStatus">Not connected. Your data is currently saved on this device.</div>
+    <div id="cloudAuthForm">
+      <input class="cloud-input" id="cloudEmail" type="email" autocomplete="email" placeholder="Email address">
+      <input class="cloud-input" id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
+      <div class="cloud-actions">
+        <button class="cloud-primary" id="cloudSignIn" type="button">SIGN IN & SYNC</button>
+        <button class="cloud-secondary" id="cloudSignUp" type="button">CREATE ACCOUNT</button>
+      </div>
+    </div>
+    <div id="cloudConnected" style="display:none">
+      <div class="cloud-user" id="cloudUserEmail"></div>
+      <div class="cloud-actions">
+        <button class="cloud-primary" id="cloudSyncNow" type="button">SYNC NOW</button>
+        <button class="cloud-secondary" id="cloudSignOut" type="button">SIGN OUT</button>
+      </div>
+    </div>
   </div>
 </aside>
 <script>
@@ -365,7 +386,210 @@ const micro = [
 
 const key="myReset_v1";
 let db=JSON.parse(localStorage.getItem(key)||'{"days":{},"microDone":0}');
-function save(){localStorage.setItem(key,JSON.stringify(db))}
+function save(){
+  localStorage.setItem(key,JSON.stringify(db));
+  if(window.cloudUser) scheduleCloudSync();
+}
+
+
+/* ===== Daily Compass Cloud Sync =====
+   Uses Supabase Auth + RLS. Local data remains the source of truth until
+   the user signs in; then local and cloud data are merged without deleting
+   existing local records. The publishable/anon key is safe for browser use
+   when RLS policies are enabled (they are enabled on the project). */
+const SUPABASE_URL="https://nduvrveklwobiqtezema.supabase.co";
+const SUPABASE_KEY="sb_publishable_TeE0QNGvZA_imFRrgk_jhw_N8byTrXm";
+const supabaseClient=(window.supabase&&window.supabase.createClient)
+  ? window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY) : null;
+let cloudUser=null, cloudSyncTimer=null, cloudBusy=false;
+
+function cloudStatus(msg){
+  const el=document.getElementById("cloudStatus");
+  if(el) el.textContent=msg;
+}
+function scheduleCloudSync(){
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer=setTimeout(()=>syncToCloud().catch(e=>cloudStatus("Cloud sync error: "+(e.message||e))),700);
+}
+function taskRowsFromLocal(userId){
+  const rows=[];
+  Object.entries(db.days||{}).forEach(([date,st])=>{
+    [
+      ["morning",morning],
+      ["night",night]
+    ].forEach(([section,arr])=>arr.forEach(t=>{
+      const key=t[1];
+      if(st && st[key]) rows.push({user_id:userId,activity_date:date,section,task_key:key,completed_at:new Date(st[key]).toISOString()});
+    }));
+  });
+  return rows;
+}
+function dailyRowsFromLocal(userId){
+  const rows=[];
+  Object.entries(db.days||{}).forEach(([date,st])=>{
+    const meals=st.meals||{};
+    const microArr=(db.microByDay&&db.microByDay[date])||[];
+    rows.push({
+      user_id:userId, activity_date:date,
+      steps:Number(st.steps||0),
+      breakfast_calories:Number(meals.breakfast||0),
+      lunch_calories:Number(meals.lunch||0),
+      snacks_calories:Number(meals.snacks||0),
+      dinner_calories:Number(meals.dinner||0),
+      micro_completed:microArr.filter(x=>x==="done").length,
+      micro_skipped:microArr.filter(x=>x==="skip").length
+    });
+  });
+  return rows;
+}
+function weightRowsFromLocal(userId){
+  return Object.entries(db.weights||{}).map(([date,value])=>({user_id:userId,weigh_date:date,weight_kg:Number(value)}));
+}
+async function getCloudUser(){
+  if(!supabaseClient) return null;
+  const {data,error}=await supabaseClient.auth.getUser();
+  if(error) throw error;
+  return data.user||null;
+}
+function mergeCloudIntoLocal(remoteDays,remoteTasks,remoteWeights){
+  db.days=db.days||{};
+  remoteDays.forEach(r=>{
+    const local=db.days[r.activity_date]||{};
+    const has=(obj,k)=>Object.prototype.hasOwnProperty.call(obj,k);
+    const merged={...r};
+    if(has(local,"steps")) merged.steps=local.steps;
+    if(local.meals){
+      merged.meals={
+        breakfast:has(local.meals,"breakfast")?local.meals.breakfast:r.breakfast_calories||0,
+        lunch:has(local.meals,"lunch")?local.meals.lunch:r.lunch_calories||0,
+        snacks:has(local.meals,"snacks")?local.meals.snacks:r.snacks_calories||0,
+        dinner:has(local.meals,"dinner")?local.meals.dinner:r.dinner_calories||0
+      };
+    }else{
+      merged.meals={breakfast:r.breakfast_calories||0,lunch:r.lunch_calories||0,snacks:r.snacks_calories||0,dinner:r.dinner_calories||0};
+    }
+    delete merged.activity_date; delete merged.user_id; delete merged.id;
+    delete merged.breakfast_calories; delete merged.lunch_calories; delete merged.snacks_calories; delete merged.dinner_calories;
+    delete merged.micro_completed; delete merged.micro_skipped; delete merged.created_at; delete merged.updated_at;
+    db.days[r.activity_date]={...local,...merged};
+    if((r.micro_completed||0)+(r.micro_skipped||0)>0 && !(db.microByDay&&db.microByDay[r.activity_date])){
+      db.microByDay=db.microByDay||{};
+      db.microByDay[r.activity_date]=Array(r.micro_completed||0).fill("done").concat(Array(r.micro_skipped||0).fill("skip"));
+    }
+  });
+  // Cloud completions are merged into local state (union; local unchecks remain local).
+  remoteTasks.forEach(r=>{
+    db.days[r.activity_date]=db.days[r.activity_date]||{};
+    if(!db.days[r.activity_date][r.task_key]) db.days[r.activity_date][r.task_key]=new Date(r.completed_at).getTime();
+  });
+  db.weights=db.weights||{};
+  remoteWeights.forEach(r=>{ if(db.weights[r.weigh_date]===undefined) db.weights[r.weigh_date]=Number(r.weight_kg); });
+}
+async function pullCloud(){
+  if(!cloudUser) return;
+  cloudStatus("Loading your cloud data…");
+  const uid=cloudUser.id;
+  const [d,t,w]=await Promise.all([
+    supabaseClient.from("daily_records").select("*").eq("user_id",uid),
+    supabaseClient.from("task_completions").select("*").eq("user_id",uid),
+    supabaseClient.from("weekly_weights").select("*").eq("user_id",uid)
+  ]);
+  if(d.error) throw d.error; if(t.error) throw t.error; if(w.error) throw w.error;
+  mergeCloudIntoLocal(d.data||[],t.data||[],w.data||[]);
+  localStorage.setItem(key,JSON.stringify(db));
+  render();
+}
+async function syncToCloud(){
+  if(!cloudUser||cloudBusy) return;
+  cloudBusy=true;
+  try{
+    cloudStatus("Syncing…");
+    const uid=cloudUser.id;
+    const daily=dailyRowsFromLocal(uid);
+    const weights=weightRowsFromLocal(uid);
+    const tasks=taskRowsFromLocal(uid);
+    if(daily.length){
+      const {error}=await supabaseClient.from("daily_records").upsert(daily,{onConflict:"user_id,activity_date"});
+      if(error) throw error;
+    }
+    if(weights.length){
+      const {error}=await supabaseClient.from("weekly_weights").upsert(weights,{onConflict:"user_id,weigh_date"});
+      if(error) throw error;
+    }
+    // Reconcile task completion rows by activity date so an explicit local
+    // uncheck can propagate instead of leaving a stale cloud completion.
+    const dates=Object.keys(db.days||{});
+    for(const date of dates){
+      const {error:delError}=await supabaseClient.from("task_completions").delete().eq("user_id",uid).eq("activity_date",date);
+      if(delError) throw delError;
+      const rows=tasks.filter(x=>x.activity_date===date);
+      if(rows.length){
+        const {error:insError}=await supabaseClient.from("task_completions").insert(rows);
+        if(insError) throw insError;
+      }
+    }
+    cloudStatus("☁️ Synced successfully · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+  }finally{cloudBusy=false;}
+}
+async function finishCloudLogin(user){
+  cloudUser=user; window.cloudUser=user;
+  document.getElementById("cloudAuthForm").style.display="none";
+  document.getElementById("cloudConnected").style.display="block";
+  document.getElementById("cloudUserEmail").textContent=user.email||"Signed in";
+  await pullCloud();
+  await syncToCloud();
+}
+async function initCloud(){
+  if(!supabaseClient){cloudStatus("Cloud library could not load. The app will continue offline.");return;}
+  const {data}=await supabaseClient.auth.getSession();
+  if(data.session) { try{ await finishCloudLogin(data.session.user); }catch(e){cloudStatus("Cloud connection error: "+(e.message||e));} }
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(session && session.user){
+      setTimeout(()=>finishCloudLogin(session.user).catch(e=>cloudStatus("Cloud sync error: "+(e.message||e))),0);
+    }else{
+      cloudUser=null; window.cloudUser=null;
+      const f=document.getElementById("cloudAuthForm"), c=document.getElementById("cloudConnected");
+      if(f) f.style.display="block"; if(c) c.style.display="none";
+      cloudStatus("Not connected. Your data is currently saved on this device.");
+    }
+  });
+  // Keep multiple devices reasonably fresh without requiring a manual refresh.
+  window.addEventListener("focus",()=>{
+    if(cloudUser) pullCloud().catch(e=>cloudStatus("Cloud refresh error: "+(e.message||e)));
+  });
+  setInterval(()=>{
+    if(document.visibilityState==="visible" && cloudUser && !cloudBusy){
+      pullCloud().catch(e=>cloudStatus("Cloud refresh error: "+(e.message||e)));
+    }
+  },30000);
+}
+
+document.getElementById("cloudSignIn").onclick=async()=>{
+  const email=document.getElementById("cloudEmail").value.trim();
+  const password=document.getElementById("cloudPassword").value;
+  if(!email||password.length<6){toast("Enter email + 6+ character password");return;}
+  try{
+    cloudStatus("Signing in…");
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    await finishCloudLogin(data.user); toast("Cloud sync connected ☁️");
+  }catch(e){cloudStatus("Sign-in failed: "+(e.message||e));}
+};
+document.getElementById("cloudSignUp").onclick=async()=>{
+  const email=document.getElementById("cloudEmail").value.trim();
+  const password=document.getElementById("cloudPassword").value;
+  if(!email||password.length<6){toast("Enter email + 6+ character password");return;}
+  try{
+    cloudStatus("Creating your cloud account…");
+    const {data,error}=await supabaseClient.auth.signUp({email,password});
+    if(error) throw error;
+    if(data.session){ await finishCloudLogin(data.user); toast("Cloud account created ☁️"); }
+    else cloudStatus("Account created. Check your email to confirm, then sign in here.");
+  }catch(e){cloudStatus("Account creation failed: "+(e.message||e));}
+};
+document.getElementById("cloudSyncNow").onclick=async()=>{try{await syncToCloud();toast("Cloud sync complete ✓");}catch(e){cloudStatus("Cloud sync failed: "+(e.message||e));}};
+document.getElementById("cloudSignOut").onclick=async()=>{await supabaseClient.auth.signOut();toast("Signed out · local data remains safe");};
+
 function iso(d){return d.toISOString().slice(0,10)}
 function todayIso(){return iso(new Date())}
 function logicalActivityDate(){
@@ -668,6 +892,7 @@ document.getElementById("dashMenu").onclick=()=>{document.getElementById("dashbo
 document.getElementById("dashClose").onclick=()=>{document.getElementById("dashboard").classList.remove("open");document.getElementById("dashBackdrop").classList.remove("open");};
 document.getElementById("dashBackdrop").onclick=()=>{document.getElementById("dashboard").classList.remove("open");document.getElementById("dashBackdrop").classList.remove("open");};
 render();
+initCloud();
 </script>
 
 
