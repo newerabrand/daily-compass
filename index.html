@@ -155,6 +155,18 @@
   .cloud-footnote{font-size:10px;color:var(--muted);line-height:1.45;margin-top:9px}
   @media(max-width:480px){.cloud-actions{grid-template-columns:1fr}.cloud-input{font-size:16px}}
 
+
+  /* Password visibility */
+  .password-wrap{position:relative;margin-top:8px}
+  .password-wrap .cloud-input{margin-top:0;padding-right:74px}
+  .password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:#f2f4f7;color:#344054;border-radius:8px;padding:6px 8px;font-size:11px;font-weight:800;cursor:pointer}
+  .password-toggle:active{transform:translateY(-50%) scale(.98)}
+
+  /* Individual task streak */
+  .task-streak{font-size:10px;color:#667085;margin-top:4px;display:flex;align-items:center;gap:4px}
+  .task-streak strong{color:#175cd3}
+  .task.done .task-streak strong{color:#067647}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="./manifest.json">
@@ -342,7 +354,10 @@
     <div class="cloud-status" id="cloudStatus">Not connected · Your data is currently saved on this device.</div>
     <div id="cloudAuthForm">
       <input class="cloud-input" id="cloudEmail" type="email" autocomplete="email" placeholder="Email address">
-      <input class="cloud-input" id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
+      <div class="password-wrap">
+        <input class="cloud-input" id="cloudPassword" type="password" autocomplete="current-password" placeholder="Password (6+ characters)">
+        <button class="password-toggle" id="togglePassword" type="button" aria-label="Show password">SHOW</button>
+      </div>
       <div class="cloud-actions">
         <button class="cloud-primary" id="cloudSignIn" type="button">SIGN IN & SYNC</button>
         <button class="cloud-secondary" id="cloudSignUp" type="button">CREATE ACCOUNT</button>
@@ -419,6 +434,7 @@ try{
   db={days:{},microDone:0};
 }
 function save(){
+  if(!programStarted()) return;
   localStorage.setItem(key,JSON.stringify(db));
   if(window.cloudUser) scheduleCloudSync();
 }
@@ -596,6 +612,15 @@ async function initCloud(){
   },30000);
 }
 
+document.getElementById("togglePassword").onclick=()=>{
+  const input=document.getElementById("cloudPassword");
+  const btn=document.getElementById("togglePassword");
+  const showing=input.type==="text";
+  input.type=showing?"password":"text";
+  btn.textContent=showing?"SHOW":"HIDE";
+  btn.setAttribute("aria-label",showing?"Show password":"Hide password");
+};
+
 document.getElementById("cloudSignIn").onclick=async()=>{
   const email=document.getElementById("cloudEmail").value.trim();
   const password=document.getElementById("cloudPassword").value;
@@ -626,12 +651,13 @@ function iso(d){return d.toISOString().slice(0,10)}
 function todayIso(){return iso(new Date())}
 function logicalActivityDate(){
   const now=new Date();
-  const h=now.getHours(), m=now.getMinutes();
+  const h=now.getHours();
   // The user's activity day closes at the scheduled shutdown time.
   // Before 3:00 AM, treat the session as the previous activity date.
   if(h<3) { const d=new Date(now); d.setDate(d.getDate()-1); return iso(d); }
   return iso(now);
 }
+function programStarted(){ return todayIso() >= START; }
 function dayNumber(){
   const a=new Date(START+"T00:00:00");
   const logical=logicalActivityDate();
@@ -640,9 +666,26 @@ function dayNumber(){
 }
 function dayKey(){return logicalActivityDate()}
 function state(){
+  if(!programStarted()) return {};
   const k=dayKey(); if(!db.days[k]) db.days[k]={};
   return db.days[k];
 }
+function taskStreak(key){
+  let n=0;
+  let d=new Date(dayKey()+"T00:00:00");
+  // If today's task is not completed, show the active streak carried from
+  // completed previous activity days. If it is completed, include today.
+  const todayState=db.days[dayKey()]||{};
+  if(!todayState[key]) d.setDate(d.getDate()-1);
+  while(true){
+    const k=iso(d), st=db.days[k]||{};
+    if(!st[key]) break;
+    n++;
+    d.setDate(d.getDate()-1);
+  }
+  return n;
+}
+
 function renderTasks(arr,id){
   const box=document.getElementById(id), st=state();
   if(!box) return;
@@ -653,8 +696,12 @@ function renderTasks(arr,id){
     el.className="task"+(done?" done":"");
     const displayName=(key==="night_shutdown")?`System shutdown — ${st.shutdownTime}`:t[1];
     const detail=(key==="night_shutdown")?`Stop all work at today's shutdown time.`:t[2];
-    el.innerHTML=`<div class="icon">${t[0]}</div><div class="task-main"><div class="task-name">${displayName}</div><div class="task-detail">${detail}</div></div><button class="complete" type="button">${done?"✓ Done":"Complete"}</button>`;
+    el.innerHTML=`<div class="icon">${t[0]}</div><div class="task-main"><div class="task-name">${displayName}</div><div class="task-detail">${detail}</div><div class="task-streak">🔥 <span>Streak: <strong>${taskStreak(key)} day${taskStreak(key)===1?"":"s"}</strong></span></div></div><button class="complete" type="button">${done?"✓ Done":"Complete"}</button>`;
     el.querySelector("button").onclick=()=>{
+      if(!programStarted()){
+        toast("Day 1 starts tomorrow · 30 Aug 2026");
+        return;
+      }
       const cur=state();
       if(!cur[key]) cur[key]=Date.now(); else delete cur[key];
       save(); render(); toast(cur[key]?"Completed ✓":"Marked incomplete");
@@ -808,8 +855,8 @@ function render(){
   const bedMinutes=Math.max(23*60, 60*25 - (dno-1)*15); // 1:00 AM -> 11:00 PM
   const bh=Math.floor(bedMinutes/60)%24, bm=bedMinutes%60;
   const bedLabel=`${bh>12?bh-12:(bh===0?12:bh)}:${String(bm).padStart(2,"0")} ${bh>=12?"PM":"AM"}`;
-  if(!st.shutdownTime) st.shutdownTime=shutdown;
-  if(!st.bedTime) st.bedTime=bedLabel;
+  if(st.shutdownTime !== shutdown) st.shutdownTime=shutdown;
+  if(st.bedTime !== bedLabel) st.bedTime=bedLabel;
 
   document.getElementById("scheduleDay").textContent=dno;
   document.getElementById("wakeTime").textContent=wakeScheduleForDay(dno);
@@ -817,7 +864,7 @@ function render(){
   save();
   document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   const nowKey=todayIso();
-  document.getElementById("startNotice").textContent = nowKey < START ? "Day 1 starts tomorrow · 30 Aug 2026" : "";
+  document.getElementById("startNotice").textContent = nowKey < START ? "Day 1 starts tomorrow · 30 Aug 2026 · Tasks unlock tomorrow" : "";
   const stepTarget=stepsTargetForDay(dayNumber());
   const nextW=nextWeighInDate(), weights=db.weights||{};
   const weightKeys=Object.keys(weights).sort();
