@@ -202,7 +202,7 @@
   .compass-n,.compass-e,.compass-s,.compass-w{position:absolute;font-size:7px;font-weight:900;opacity:.82}
   .compass-n{top:3px;left:50%;transform:translateX(-50%);color:#ff4d4f}.compass-e{right:4px;top:50%;transform:translateY(-50%)}.compass-s{bottom:3px;left:50%;transform:translateX(-50%)}.compass-w{left:4px;top:50%;transform:translateY(-50%)}
   .compass-needle{position:absolute;inset:10px;transform-origin:50% 50%;animation:needleExplore 5.2s cubic-bezier(.65,.05,.35,1) infinite}
-  .compass-needle i,.compass-needle b{display:none}
+  .compass-needle i{display:block;position:absolute;left:50%;top:50%;width:2.5px;height:20px;border-radius:2px 2px 0 0;background:#ff4d4f;transform-origin:50% 100%;transform:translate(-50%,-100%);box-shadow:0 0 4px rgba(255,77,79,.35)} .compass-needle b{display:none}
   .compass-needle i{background:#ff4d4f;transform:translate(-50%,-100%)}.compass-needle b{display:none}
   .compass-center{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(16,24,40,.18);z-index:2}
   @keyframes needleExplore{
@@ -299,56 +299,11 @@
   font-weight:600 !important;
 }
 
+#weightSection #weightInput:disabled,#weightSection #saveWeight:disabled,#weightSection #clearWeight:disabled{opacity:.5!important;cursor:not-allowed!important;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 
-(function(){
-  const input=document.getElementById("profileName");
-  const btn=document.getElementById("saveProfileName");
-  const status=document.getElementById("profileSaveStatus");
-  if(!input||!btn)return;
-
-  function savedName(){return (localStorage.getItem("dailyCompass_profileName")||"").trim();}
-  function refreshSaveState(){
-    const current=input.value.trim();
-    const saved=savedName();
-    const unchanged=current===saved && current!=="";
-    btn.classList.toggle("save-profile-saved",unchanged);
-    btn.disabled=unchanged;
-    btn.textContent=unchanged?"SAVED ✓":"SAVE PROFILE";
-    if(!unchanged && status && status.classList.contains("profile-save-success")){
-      status.classList.remove("profile-save-success");
-      status.textContent="You can use Daily Compass locally without an account. Log in to keep your data synced to the cloud.";
-    }
-  }
-
-  input.value=savedName();
-  refreshSaveState();
-
-  input.addEventListener("input",function(){
-    refreshSaveState();
-  });
-
-  btn.addEventListener("click",function(){
-    if(typeof isTransitionWindow==="function" && isTransitionWindow()){
-      showTransitionOverlay();return;
-    }
-    const name=input.value.trim();
-    if(!name){
-      if(status)status.textContent="Enter a profile name first.";
-      return;
-    }
-    setProfileName(name);
-    btn.classList.add("save-profile-saved");
-    btn.disabled=true;
-    btn.textContent="SAVED ✓";
-    if(status){
-      status.classList.add("profile-save-success");
-      status.textContent="Your name is saved";
-    }
-    if(typeof toast==="function")toast("Your name is saved");
-  });
-})();
+(function(){ const input=document.getElementById("profileName"); const btn=document.getElementById("saveProfileName"); const editBtn=document.getElementById("editProfileName"); const status=document.getElementById("profileSaveStatus"); if(!input||!btn||!editBtn)return; function savedName(){return (localStorage.getItem("dailyCompass_profileName")||"").trim();} function viewMode(){ input.value=savedName(); input.readOnly=true; btn.disabled=true; btn.textContent="SAVED ✓"; editBtn.disabled=false; } function editMode(){ input.readOnly=false; input.focus(); input.select(); btn.disabled=false; btn.textContent="SAVE PROFILE"; editBtn.disabled=true; } viewMode(); editBtn.addEventListener("click",function(){ editMode(); if(status){status.classList.remove("profile-save-success");status.textContent="Edit your name, then save it.";} }); btn.addEventListener("click",function(){ const name=input.value.trim(); if(!name){if(status)status.textContent="Enter a profile name first.";return;} setProfileName(name); viewMode(); if(status){status.classList.add("profile-save-success");status.textContent="Your name is saved";} if(typeof toast==="function")toast("Your name is saved"); }); })();
 
 
 setInterval(render,1000);
@@ -426,8 +381,8 @@ setInterval(function(){
     <div class="section-title"><h2>⚖️ Weekly weight check</h2><small id="weightDayLabel">Weekly only</small></div>
     <div class="steps-card">
       <div class="note" id="weightScheduleText">Weigh once a week in the morning, under similar conditions.</div>
-      <div class="steps-number"><span id="currentWeightDate">—</span></div>
-      <div class="steps-meta"><span>Next weigh date</span><span id="nextWeightDate">—</span></div>
+      <div class="steps-meta" style="display:block"><span id="currentWeightDateLabel" style="display:block">Upcoming Weigh Date:</span><span id="currentWeightDate" style="display:block;margin-top:3px">—</span></div>
+      <div class="steps-meta"><span>Next Weigh Date</span><span id="nextWeightDate">—</span></div>
       <div class="steps-meta"><span>Previous weight</span><span id="lastWeightText">—</span></div>
       <input class="steps-input" id="weightInput" type="number" min="30" max="300" step="0.1" placeholder="Enter weight (kg)">
       <div class="micro-row" style="margin-top:10px">
@@ -584,9 +539,9 @@ setInterval(function(){
     </div>
     <div class="profile-name-wrap" style="margin-top:12px">
 <label for="profileName" style="display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#344054">Profile name</label>
-<input class="cloud-input" id="profileName" type="text" maxlength="40" autocomplete="name" placeholder="Enter your name">
+<input class="cloud-input" id="profileName" type="text" maxlength="40" autocomplete="name" placeholder="Enter your name" readonly>
 <div class="micro-row" style="margin-top:8px">
-  <button class="primary" id="saveProfileName" type="button">SAVE PROFILE</button>
+  <button class="primary" id="saveProfileName" type="button">SAVE PROFILE</button> <button class="secondary" id="editProfileName" type="button">EDIT</button>
 </div>
 <div class="cloud-footnote" id="profileSaveStatus" style="margin-top:6px">You can use Daily Compass locally without an account. Log in to keep your data synced to the cloud.</div>
 <div class="cloud-footnote">This name is used for your Daily Compass greeting.</div>
@@ -1173,14 +1128,8 @@ function stepsTargetForDay(dno){
   return Math.min(8000, 3000 + Math.floor((dno-1)/10)*500);
 }
 
-function weeklyWeighDates(){
-  const d=new Date(logicalActivityDate()+"T12:00:00");
-  const daysSinceSunday=d.getDay(); // Sunday = 0
-  d.setDate(d.getDate()-daysSinceSunday);
-  const current=iso(d);
-  d.setDate(d.getDate()+7);
-  return {current,next:iso(d)};
-}
+function weeklyWeighDates(){ const now=new Date(); const d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12,0,0); let daysUntilSunday=(7-d.getDay())%7; if(daysUntilSunday===0 && now.getHours()>=2) daysUntilSunday=7; d.setDate(d.getDate()+daysUntilSunday); const current=iso(d); d.setDate(d.getDate()+7); return {current,next:iso(d)}; }
+function isWeightWeighDay(){ return todayIso()===weeklyWeighDates().current; }
 function formatDateShort(k){
   return new Date(k+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
 }
@@ -1258,15 +1207,16 @@ function render(){
   }
   const stepTarget=stepsTargetForDay(dayNumber());
   const weighDates=weeklyWeighDates(), currentW=weighDates.current, nextW=weighDates.next;
-  const weights=db.weights||{};
-  const weightKeys=Object.keys(weights).sort();
-  const lastW=weightKeys.length?weightKeys[weightKeys.length-1]:null;
-  document.getElementById("currentWeightDate").textContent=formatDateShort(currentW);
-  document.getElementById("nextWeightDate").textContent=`${formatDateShort(nextW)} 2026`;
-  document.getElementById("weightDayLabel").textContent=lastW?`${weights[lastW]} kg last logged`:"Weekly only";
-  document.getElementById("lastWeightText").textContent=lastW?`${weights[lastW]} kg · ${formatDateShort(lastW)}`:"—";
-  document.getElementById("weightInput").value="";
-  document.getElementById("weightScheduleText").textContent=`Weekly weigh-in · ${formatDateShort(currentW)} → next ${formatDateShort(nextW)}`;
+  const weights=db.weights||{}; const weightKeys=Object.keys(weights).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort(); const previousW=weightKeys.filter(k=>k<currentW).pop()||null; document.getElementById("currentWeightDate").textContent=`${formatDateShort(currentW)} 2026`; document.getElementById("nextWeightDate").textContent=`${formatDateShort(nextW)} 2026`; document.getElementById("weightDayLabel").textContent=previousW?`${weights[previousW]} kg last logged`:"Weekly only"; document.getElementById("lastWeightText").textContent=previousW?`${weights[previousW]} kg · ${formatDateShort(previousW)}`:"—"; const weightOpen=isWeightWeighDay();
+  const weightInput=document.getElementById("weightInput");
+  const saveWeightBtn=document.getElementById("saveWeight");
+  const clearWeightBtn=document.getElementById("clearWeight");
+  weightInput.value="";
+  weightInput.disabled=!weightOpen;
+  saveWeightBtn.disabled=!weightOpen;
+  clearWeightBtn.disabled=!weightOpen;
+  weightInput.placeholder=weightOpen?"Enter weight (kg)":`Opens on ${formatDateShort(currentW)}`;
+  document.getElementById("weightScheduleText").textContent="Weigh once a week in the morning, under similar conditions.";
 
   document.getElementById("breakfastLabel").textContent="1️⃣ Breakfast · 8:00–9:15 AM";
   document.getElementById("lunchLabel").textContent="2️⃣ Lunch · 1:00–2:00 PM";
@@ -1319,8 +1269,8 @@ document.getElementById("exhaustedBtn").onclick=()=>{
     }
   },1000);
 };
-document.getElementById("doneMicro").onclick=()=>{if(transitionLocked()){showTransitionOverlay();return;} finishMicro("done")};
-document.getElementById("skipMicro").onclick=()=>{if(transitionLocked()){showTransitionOverlay();return;} finishMicro("skip")};
+document.getElementById("doneMicro").onclick=()=>{finishMicro("done")};
+document.getElementById("skipMicro").onclick=()=>{finishMicro("skip")};
 document.getElementById("saveMeals").onclick=()=>{
   if(transitionLocked()){showTransitionOverlay();return;}
   state().meals={
@@ -1350,6 +1300,7 @@ document.getElementById("resetSteps").onclick=()=>{
   db.days[d].steps=0;save();render();toast("Steps reset for this activity day");
 };
 document.getElementById("saveWeight").onclick=()=>{
+  if(!isWeightWeighDay()){toast(`Weight opens on ${formatDateShort(weeklyWeighDates().current)}`);return;}
   if(transitionLocked()){showTransitionOverlay();return;}
   const v=Number(document.getElementById("weightInput").value);
   if(!v || v<30 || v>300){toast("Enter a valid weight in kg");return;}
@@ -1359,6 +1310,7 @@ document.getElementById("saveWeight").onclick=()=>{
   save();render();toast(`Weight saved for ${formatDateShort(d)} ✓`);
 };
 document.getElementById("clearWeight").onclick=()=>{
+  if(!isWeightWeighDay()){toast(`Weight opens on ${formatDateShort(weeklyWeighDates().current)}`);return;}
   if(transitionLocked()){showTransitionOverlay();return;}
   const d=logicalActivityDate();
   if(db.weights && db.weights[d]!==undefined){delete db.weights[d];save();render();toast("This week's weight entry cleared");}
@@ -1423,12 +1375,12 @@ const waitX=document.getElementById("waitX");if(waitX)waitX.onclick=closeTransit
 window.addEventListener("click",function(e){
   if(!isTransitionWindow())return;
   const target=e.target.closest("button,input,select,textarea");
-  if(!target||target.closest("#transitionOverlay")||target.closest("#dashboard")||target.closest("#dashMenu"))return;
+  if(!target||target.closest("#transitionOverlay")||target.closest("#dashboard")||target.closest("#dashMenu")||["exhaustedBtn","doneMicro","skipMicro"].includes(target.id))return;
   e.preventDefault();e.stopImmediatePropagation();showTransitionOverlay();
 },true);
 
 (function(){
-  ["saveSteps","saveMeals","saveWeight","resetSteps","resetCalories","clearWeight","doneMicro","skipMicro"].forEach(id=>{
+  ["saveSteps","saveMeals","saveWeight","resetSteps","resetCalories","clearWeight",].forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     el.addEventListener("click",function(e){
