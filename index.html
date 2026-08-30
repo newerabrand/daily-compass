@@ -921,13 +921,7 @@ function isBeforeDay1Start(){
   if(ymd>START)return false;
   return now.getHours()<4;
 }
-function logicalActivityDate(){
-  const now=new Date(), h=now.getHours();
-  if(h<4){
-    const d=new Date(now); d.setDate(d.getDate()-1); return localIsoDate(d);
-  }
-  return localIsoDate(now);
-}
+function logicalActivityDate(){ return dayKey(); }
 
 function updateTrialBadge(){
   const b=document.getElementById("trialBadge");
@@ -1235,7 +1229,7 @@ function renderDashboard(){
 }
 
 function previousActivitySteps(){
-  const d=new Date(logicalActivityDate()+"T12:00:00");
+  const d=new Date(dayKey()+"T12:00:00");
   d.setDate(d.getDate()-1);
   const k=localIsoDate(d);
   return Number((db.days&&db.days[k]&&db.days[k].steps)||0);
@@ -1289,7 +1283,7 @@ function render(){
   document.getElementById("lunchLabel").textContent="2️⃣ Lunch · 1:00–2:00 PM";
   document.getElementById("snacksLabel").textContent="3️⃣ Snacks · 5:00–6:00 PM";
   document.getElementById("dinnerLabel").textContent=`4️⃣ Dinner · ${dinnerScheduleForDay(dayNumber())}`;
-  const stepDate=logicalActivityDate();
+  const stepDate=dayKey();
   if(!db.days[stepDate]) db.days[stepDate]={};
   const todaySteps=db.days[stepDate].steps||0;
   document.getElementById("stepsTarget").textContent=stepTarget.toLocaleString();
@@ -1355,14 +1349,14 @@ document.getElementById("resetCalories").onclick=()=>{
 };
 document.getElementById("saveSteps").onclick=()=>{
   if(transitionLocked()){showTransitionOverlay();return;}
-  const d=logicalActivityDate();
+  const d=dayKey();
   if(!db.days[d]) db.days[d]={};
   db.days[d].steps=Math.max(0,Number(document.getElementById("stepsInput").value||0));
   save();render();toast(`Steps saved for ${new Date(d+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"})} ✓`);
 };
 document.getElementById("resetSteps").onclick=()=>{
   if(transitionLocked()){showTransitionOverlay();return;}
-  const d=logicalActivityDate();
+  const d=dayKey();
   if(!db.days[d]) db.days[d]={};
   db.days[d].steps=0;save();render();toast("Steps reset for this activity day");
 };
