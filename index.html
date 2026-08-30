@@ -968,18 +968,7 @@ function dayKey(){
   return localIsoDate(now);
 }
 
-function resetForNewWorkingDay(){
-  const now=new Date(), h=now.getHours();
-  if(h<2) return;
-  const k=localIsoDate(now);
-  if(!db.days[k]) db.days[k]={};
-  // Never delete prior dates. The current calendar date is the fresh working state.
-  if(!db._workingResetDate || db._workingResetDate!==k){
-    db.days[k]={};
-    db._workingResetDate=k;
-    save();
-  }
-}
+function resetForNewWorkingDay(){ const now=new Date(), h=now.getHours(); const k=dayKey(); if(h<2){ if(db._workingResetDate!==k){ db._workingResetDate=k; save(); } return; } if(!db.days[k]) db.days[k]={}; if(db._workingResetDate!==k){ db.days[k]={}; db._workingResetDate=k; save(); } }
 
 
 /* Adaptive weekly calorie target:
