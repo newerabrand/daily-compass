@@ -37,7 +37,7 @@
   .micro-row{display:flex;gap:9px}.primary{background:var(--accent);color:white;border-radius:11px;padding:11px 14px;font-weight:700}.secondary{background:#f2f4f7;color:var(--text);border-radius:11px;padding:11px 14px;font-weight:700}
   .progress{height:8px;background:#eaecf0;border-radius:99px;overflow:hidden;margin-top:10px}.bar{height:100%;background:var(--accent2);width:0%;transition:.25s}
   .steps-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
-  .steps-number{font-size:34px;font-weight:900;margin:6px 0}.steps-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+  .steps-number{font-size:26px;font-weight:900;margin:6px 0;overflow-wrap:anywhere}.steps-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
   .steps-input{width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:10px;font:inherit;margin-top:10px}
   .meal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .meal{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:11px}
@@ -167,18 +167,224 @@
   .task-streak strong{color:#175cd3}
   .task.done .task-streak strong{color:#067647}
 
+
+  /* Activity-day transition lock: 2:00–4:00 AM */
+  .day-lock-overlay{position:fixed;inset:0;z-index:150;background:rgba(16,24,40,.68);display:none;place-items:center;padding:24px;cursor:pointer}
+  .day-lock-overlay.show{display:grid}
+  .day-lock-card{width:min(92vw,380px);background:#fff;border-radius:22px;padding:26px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .day-lock-icon{font-size:40px;margin-bottom:8px}
+  .day-lock-title{font-size:22px;font-weight:900;color:#101828}
+  .day-lock-text{margin-top:8px;color:#667085;font-size:14px;line-height:1.5}
+  .day-lock-time{margin-top:12px;font-size:13px;font-weight:800;color:#175cd3}
+
+
+.profile-name-wrap .cloud-input{width:100%}
+.transition-overlay{position:fixed;inset:0;background:rgba(16,24,40,.82);z-index:300;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.transition-overlay.show{opacity:1;pointer-events:auto}
+.transition-card{width:min(90vw,390px);background:#fff;border-radius:24px;padding:24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.3);animation:waitCardIn .35s ease-out}
+.wait-ring{width:118px;height:118px;margin:0 auto 16px;border-radius:50%;border:8px solid #eaecf0;border-top-color:#175cd3;display:grid;place-items:center;animation:spinWait 1.05s linear infinite;position:relative}
+.wait-ring::after{content:"";position:absolute;inset:13px;border-radius:50%;border:2px dashed #98a2b3;animation:spinWaitReverse 3s linear infinite}
+.wait-clock{font-size:38px;line-height:1;font-weight:900;animation:clockPulse 1s ease-in-out infinite}
+.wait-title{font-size:22px;font-weight:900;margin-top:4px}.wait-sub{font-size:13px;color:#667085;line-height:1.5;margin-top:7px}
+.wait-time{font-size:30px;font-weight:900;margin-top:12px}.wait-bar{height:9px;background:#eaecf0;border-radius:999px;overflow:hidden;margin-top:14px}
+.wait-fill{height:100%;width:0;background:#175cd3;transition:width 1s linear}.wait-annoy{font-size:11px;color:#98a2b3;margin-top:11px}
+.wait-close{margin-top:14px;background:#f2f4f7;color:#101828;border-radius:11px;padding:9px 13px;font-weight:800;font-size:12px}
+@keyframes spinWait{to{transform:rotate(360deg)}}@keyframes spinWaitReverse{to{transform:rotate(-360deg)}}
+@keyframes clockPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}@keyframes waitCardIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+
+.wait-x{position:absolute;right:12px;top:10px;width:36px;height:36px;border:0;border-radius:50%;background:#f2f4f7;color:#344054;font-size:28px;line-height:32px;cursor:pointer}
+.transition-card{position:relative}
+
+  .hero-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .hero-title-row h1{margin:5px 0 4px}
+  .hero-compass{width:64px;height:64px;flex:0 0 64px;display:grid;place-items:center}
+  .compass-face{width:58px;height:58px;border:2px solid rgba(255,255,255,.72);border-radius:50%;position:relative;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 5px rgba(255,255,255,.04),0 4px 16px rgba(0,0,0,.12)}
+  .compass-n,.compass-e,.compass-s,.compass-w{position:absolute;font-size:7px;font-weight:900;opacity:.82}
+  .compass-n{top:3px;left:50%;transform:translateX(-50%);color:#ff4d4f}.compass-e{right:4px;top:50%;transform:translateY(-50%)}.compass-s{bottom:3px;left:50%;transform:translateX(-50%)}.compass-w{left:4px;top:50%;transform:translateY(-50%)}
+  .compass-needle{position:absolute;inset:10px;transform-origin:50% 50%;animation:needleExplore 5.2s cubic-bezier(.65,.05,.35,1) infinite}
+  .compass-needle i,.compass-needle b{display:none}
+  .compass-needle i{background:#ff4d4f;transform:translate(-50%,-100%)}.compass-needle b{display:none}
+  .compass-center{position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(16,24,40,.18);z-index:2}
+  @keyframes needleExplore{
+    0%{transform:rotate(0deg)}
+    16%{transform:rotate(-90deg)}
+    31%{transform:rotate(-180deg)}
+    46%{transform:rotate(-270deg)}
+    58%{transform:rotate(-360deg)}
+    66%{transform:rotate(-450deg)}
+    79%{transform:rotate(-540deg)}
+    90%{transform:rotate(-630deg)}
+    100%{transform:rotate(-720deg)}
+  }
+  .boat-motion{animation:robotFloat 2.8s ease-in-out infinite}
+  @keyframes robotFloat{
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-2px) rotate(-1deg)}
+    50%{transform:translateY(1px) rotate(1deg)}
+    75%{transform:translateY(-1px) rotate(-1deg)}
+  }
+    25%{transform:translateX(2px) translateY(-2px) rotate(-2deg)}
+    50%{transform:translateX(0) translateY(1px) rotate(2deg)}
+    75%{transform:translateX(-2px) translateY(-1px) rotate(-1deg)}
+  }
+  @media(max-width:480px){.hero-compass{width:54px;height:54px;flex-basis:54px}.compass-face{width:50px;height:50px}}
+
+
+  .save-profile-saved{background:#98a2b3!important;color:#fff!important;cursor:default!important}
+  .profile-save-success{color:#12b76a;font-weight:700}
+
+/* Final compact dashboard repair */
+@media(max-width:520px){
+  .task{padding:12px;gap:10px}
+  .section{margin-top:14px}
+}
+#morningTasks .task,#nightTasks .task{margin:9px 0}
+#progressSection{margin-top:18px}
+
+
+/* Final compact layout */
+.section{margin-top:16px}
+.task{padding:12px;margin:8px 0;gap:10px}
+.steps-card,.micro,.schedule,.agent{padding:14px}
+.section-title{gap:6px}
+.section-title h2{font-size:16px;min-width:0}
+.section-title small{font-size:11px;white-space:nowrap}
+.hero{padding:20px}
+.streaks{gap:8px;margin-top:16px}
+.stat{padding:10px}
+.stat b{font-size:22px}
+.stat span{font-size:10px}
+@media(max-width:480px){
+  .wrap{padding:10px 10px 28px}
+  .hero{padding:17px 15px}
+  .section{margin-top:12px}
+  .task{padding:10px 9px;gap:8px}
+  .task .icon{width:36px;height:36px;flex-basis:36px}
+  .task-name{font-size:13px}
+  .task-detail{font-size:11px}
+  .task-streak{font-size:10px}
+  .steps-card,.micro,.schedule,.agent{padding:12px}
+  .section-title h2{font-size:15px}
+  .stat{padding:8px}
+  .stat b{font-size:19px}
+}
+
+
+/* Weekly weight: contained, slightly darker differentiated card */
+#weightSection .steps-card{
+  background:#eef2f6;
+  border-color:#cfd6df;
+}
+#weightSection .steps-number{font-size:26px}
+#weightSection .steps-input{background:#fff}
+#weightSection .micro-row .primary{background:#344054}
+
+
+/* Blue hero layout — verified containment */
+.hero{box-sizing:border-box;min-height:220px;overflow:hidden;}
+.hero .hero-title-row{margin-bottom:8px;}
+.hero .date#today{display:block;font-size:1rem;line-height:1.25;font-weight:700;margin:0;}
+.hero #startNotice{display:block;font-size:.76rem;line-height:1.25;margin-top:3px;color:#98a2b3;}
+.hero .streaks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;box-sizing:border-box;margin-top:14px;}
+.hero .streaks .stat{min-width:0;}
+
+
+/* Weekly weight date hierarchy */
+#weightSection #currentWeightDate{
+  font-size:1.55rem !important;
+  font-weight:800 !important;
+}
+#weightSection #nextWeightDate{
+  font-size:.9rem !important;
+  font-weight:600 !important;
+}
+
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+
+(function(){
+  const input=document.getElementById("profileName");
+  const btn=document.getElementById("saveProfileName");
+  const status=document.getElementById("profileSaveStatus");
+  if(!input||!btn)return;
+
+  function savedName(){return (localStorage.getItem("dailyCompass_profileName")||"").trim();}
+  function refreshSaveState(){
+    const current=input.value.trim();
+    const saved=savedName();
+    const unchanged=current===saved && current!=="";
+    btn.classList.toggle("save-profile-saved",unchanged);
+    btn.disabled=unchanged;
+    btn.textContent=unchanged?"SAVED ✓":"SAVE PROFILE";
+    if(!unchanged && status && status.classList.contains("profile-save-success")){
+      status.classList.remove("profile-save-success");
+      status.textContent="You can use Daily Compass locally without an account. Log in to keep your data synced to the cloud.";
+    }
+  }
+
+  input.value=savedName();
+  refreshSaveState();
+
+  input.addEventListener("input",function(){
+    refreshSaveState();
+  });
+
+  btn.addEventListener("click",function(){
+    if(typeof isTransitionWindow==="function" && isTransitionWindow()){
+      showTransitionOverlay();return;
+    }
+    const name=input.value.trim();
+    if(!name){
+      if(status)status.textContent="Enter a profile name first.";
+      return;
+    }
+    setProfileName(name);
+    btn.classList.add("save-profile-saved");
+    btn.disabled=true;
+    btn.textContent="SAVED ✓";
+    if(status){
+      status.classList.add("profile-save-success");
+      status.textContent="Your name is saved";
+    }
+    if(typeof toast==="function")toast("Your name is saved");
+  });
+})();
+
+
+setInterval(render,1000);
+
+let __lastWorkingDay=dayKey();
+setInterval(function(){
+  const before=__lastWorkingDay;
+  resetForNewWorkingDay();
+  const nowDay=dayKey();
+  if(nowDay!==before || isTransitionWindow()){
+    __lastWorkingDay=nowDay;
+    ["stepsInput","calBreakfast","calLunch","calSnacks","calDinner","weightInput"].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value="";
+    });
+    render();
+  }
+},1000);
+
+</script>
 <link rel="manifest" href="./manifest.json">
-<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
     <div class="eyebrow">DAILY COMPASS</div>
-    <h1>Day <span id="dayNo">1</span></h1>
-    <div class="date" id="today"></div><div class="note" id="startNotice" style="color:#98a2b3;margin-top:6px"></div>
+    <div class="hero-title-row">
+      <h1><span id="dayNo">1</span></h1>
+      <div class="hero-compass" aria-label="Animated compass">
+        <div class="compass-face">
+          <span class="compass-n">N</span><span class="compass-e">E</span><span class="compass-s">S</span><span class="compass-w">W</span>
+          <div class="compass-needle"><i></i><b></b></div>
+          <div class="compass-center"></div>
+        </div>
+      </div>
+    </div>
+    <div class="date" id="today"></div><div class="note" id="startNotice" style="color:#98a2b3;margin-top:6px">Day 2, Monday, 31 August 2026, starts at 4 a.m.</div>
     <div class="streaks">
       <div class="stat"><b id="overallStreak">0</b><span>OVERALL STREAK</span></div>
       <div class="stat"><b id="morningStreak">0</b><span>MORNING STREAK</span></div>
@@ -186,10 +392,23 @@
     </div>
   </header>
 
-  <div class="agent">
-    <div class="agent-icon">🤖</div>
+  <div id="trialBadge" style="display:none;margin-top:6px;color:#667085;font-size:11px;font-weight:600;text-align:center"></div>
+<div class="agent">
+    <div class="agent-icon boat-motion cute-robot" aria-label="Cute robot assistant">
+      <svg viewBox="0 0 64 64" role="img" aria-hidden="true">
+        <rect x="14" y="18" width="36" height="32" rx="11" fill="white" stroke="#475467" stroke-width="2"/>
+        <rect x="19" y="25" width="26" height="17" rx="7" fill="#eef4ff" stroke="#98a2b3" stroke-width="1.5"/>
+        <circle cx="27" cy="33" r="3" fill="#175cd3"/><circle cx="37" cy="33" r="3" fill="#175cd3"/>
+        <path d="M27 38 Q32 42 37 38" fill="none" stroke="#475467" stroke-width="2" stroke-linecap="round"/>
+        <path d="M32 18V12" stroke="#475467" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="32" cy="9" r="3" fill="#12b76a" stroke="#475467" stroke-width="1.5"/>
+        <path d="M14 31H9M50 31H55" stroke="#475467" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="8" cy="31" r="2" fill="#98a2b3"/><circle cx="56" cy="31" r="2" fill="#98a2b3"/>
+        <rect x="22" y="45" width="8" height="5" rx="2.5" fill="#d0d5dd"/><rect x="34" y="45" width="8" height="5" rx="2.5" fill="#d0d5dd"/>
+      </svg>
+    </div>
     <div class="agent-copy">
-      <p class="hello" id="greeting">Good morning, Azhar.</p>
+      <p class="hello" id="greeting">Good morning.</p>
       <span id="agentMessage">Let's win the morning first. One completed task at a time.</span>
     </div>
   </div>
@@ -197,7 +416,6 @@
   <section class="section">
     <div class="section-title"><h2>⏰ Today's timing</h2><small>Day <span id="scheduleDay">1</span></small></div>
     <div class="schedule">
-      <div class="note" style="margin-bottom:10px">Shutdown shifts earlier automatically by activity day — Day 1 starts at <b>1:30 AM</b> and gradually reaches <b>9:00 PM</b>.</div>
       <div class="schedule-grid">
         <div class="schedule-item"><b id="wakeTime">7:45 AM</b><span>Start of day · Wake-up</span></div>
         <div class="schedule-item"><b id="shutdownTime">1:30 AM</b><span>End of day · System shutdown</span></div>
@@ -208,8 +426,9 @@
     <div class="section-title"><h2>⚖️ Weekly weight check</h2><small id="weightDayLabel">Weekly only</small></div>
     <div class="steps-card">
       <div class="note" id="weightScheduleText">Weigh once a week in the morning, under similar conditions.</div>
-      <div class="steps-number"><span id="nextWeightDate">—</span></div>
-      <div class="steps-meta"><span>Next weigh-in</span><span id="lastWeightText">No weight logged yet</span></div>
+      <div class="steps-number"><span id="currentWeightDate">—</span></div>
+      <div class="steps-meta"><span>Next weigh date</span><span id="nextWeightDate">—</span></div>
+      <div class="steps-meta"><span>Previous weight</span><span id="lastWeightText">—</span></div>
       <input class="steps-input" id="weightInput" type="number" min="30" max="300" step="0.1" placeholder="Enter weight (kg)">
       <div class="micro-row" style="margin-top:10px">
         <button class="primary" id="saveWeight">SAVE WEIGHT</button>
@@ -230,7 +449,7 @@
     <div class="steps-card">
       <div class="note">Your target increases gradually so we build an active routine without making the first days exhausting.</div>
       <div class="steps-number"><span id="stepsTarget">3000</span> <span style="font-size:13px;font-weight:600;color:var(--muted)">steps target</span></div>
-      <div class="steps-meta"><span>Log for</span><span id="stepsLogDate">30 Aug 2026</span></div>
+      <div class="steps-meta"><span>Previous Steps</span><span id="stepsLogDate">0</span></div>
       
       <input class="steps-input" id="stepsInput" type="number" min="0" step="100" placeholder="Enter that day's final steps">
       <div class="micro-row" style="margin-top:10px">
@@ -242,7 +461,7 @@
   </section>
 
   <section class="section">
-    <div class="section-title"><h2>🍽️ Meal schedule & calories</h2><small id="calorieStatus">0 / 1700 kcal</small></div>
+    <div class="section-title"><h2>🍽️ Meal schedule & calories</h2><small id="adaptiveCalorieNote" style="display:none">Adaptive</small><small id="calorieStatus">0 / 1700 kcal</small></div>
     <div class="micro">
       <div class="note">Follow the time slot, then enter the estimated calories for that meal. The app adds everything into your EOD total.</div>
       <div class="meal-grid" style="grid-template-columns:1fr">
@@ -292,7 +511,7 @@
     <div class="progress"><div class="bar" id="bar"></div></div>
   </section>
 
-<div class="footer">Schedule changes automatically by day. Steps are assigned to the activity day, so after midnight they remain with the previous day until that day's shutdown. Your data is saved on this device and can be synced securely to your Daily Compass cloud account.</div>
+<div class="footer">Schedule changes automatically by day. Your completed data is saved on this device in this prototype. Daily Compass Cloud account.</div>
 </div>
 
 <div class="energy-overlay" id="energyOverlay">
@@ -304,8 +523,18 @@
     <div class="energy-progress"><div class="energy-fill" id="energyFill"></div></div>
   </div>
 </div><div class="toast" id="toast"></div>
-
-
+<div class="transition-overlay" id="transitionOverlay" aria-live="polite">
+  <div class="transition-card">
+    <button class="wait-x" id="waitX" type="button" aria-label="Close">×</button>
+    <div class="wait-ring"><div class="wait-clock">⏳</div></div>
+    <div class="wait-title">Sorry, it’s my time to rest. See you at 4 A.M. 😴</div>
+    <div class="wait-sub">It's the transition window. Your previous activity day is safe, but new entries stay locked until 4:00 AM.</div>
+    <div class="wait-time" id="waitCountdown">02:00:00</div>
+    <div class="wait-bar"><div class="wait-fill" id="waitFill"></div></div>
+    <div class="wait-annoy">Not yet. Almost there. 😅</div>
+    <button class="wait-close" id="waitClose" type="button">OK, I'LL WAIT</button>
+  </div>
+</div>
 <div class="welcome-screen" id="welcomeScreen" aria-label="New morning">
   <div class="welcome-sky"></div>
   <div class="welcome-sun"></div>
@@ -315,12 +544,12 @@
   <div class="welcome-bird bird-two">⌁</div>
   <div class="welcome-bird bird-three">⌁</div>
 </div>
+
+
 <button class="hamburger" id="dashMenu" aria-label="Open Dashboard">☰</button>
 <div class="dash-backdrop" id="dashBackdrop"></div>
 <aside class="dashboard" id="dashboard" aria-label="Dashboard">
-  <div class="dash-head"><h2>📊 Dashboard</h2><button class="dash-close" id="dashClose">✕</button></div>
-
-  <div class="dash-card">
+  <div class="dash-head"><h2>📊 Dashboard</h2><button class="dash-close" id="dashClose">✕</button></div><div class="dash-card">
     <h3>⚖️ Weight Loss</h3>
     <div class="dash-meta"><span id="weightDashText">Weekly progress</span><b id="weightChange">—</b></div>
     <div class="weight-row" id="weightChart"></div>
@@ -353,7 +582,20 @@
         <span>Securely keep your Daily Compass progress available across devices.</span>
       </div>
     </div>
-    <div class="cloud-status" id="cloudStatus">Not connected · Your data is currently saved on this device.</div>
+    <div class="profile-name-wrap" style="margin-top:12px">
+<label for="profileName" style="display:block;font-size:12px;font-weight:800;margin-bottom:6px;color:#344054">Profile name</label>
+<input class="cloud-input" id="profileName" type="text" maxlength="40" autocomplete="name" placeholder="Enter your name">
+<div class="micro-row" style="margin-top:8px">
+  <button class="primary" id="saveProfileName" type="button">SAVE PROFILE</button>
+</div>
+<div class="cloud-footnote" id="profileSaveStatus" style="margin-top:6px">You can use Daily Compass locally without an account. Log in to keep your data synced to the cloud.</div>
+<div class="cloud-footnote">This name is used for your Daily Compass greeting.</div>
+</div>
+<div id="cloudChoiceNote" style="margin-top:10px;padding:11px 12px;border:1px solid #dbe4f0;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.45;color:#475467">
+      <b style="display:block;color:#101828;margin-bottom:3px">Local or Cloud — your choice</b>
+      Use the app normally on this phone without logging in. If you create/log into a Daily Compass Cloud account, your saved data can sync with your account and can be restored when you sign in again.
+    </div>
+<div class="cloud-status" id="cloudStatus">Not connected · Your data is currently saved on this device.</div>
     <div id="cloudAuthForm">
       <input class="cloud-input" id="cloudEmail" type="email" autocomplete="email" placeholder="Email address">
       <div class="password-wrap">
@@ -375,7 +617,10 @@
       </div>
     </div>
   </div>
-</aside>
+<div class="dash-card" id="dataExportCard">
+  <button class="primary" id="downloadMyData" type="button" style="width:100%">DOWNLOAD MY DATA</button>
+  <div class="note" id="exportStatus" style="margin-top:7px"></div>
+</div></aside>
 <script>
 
 (function(){
@@ -384,7 +629,8 @@
   setTimeout(()=>ws.remove(),3600);
 })();
 
-const START = "2026-08-30"; // Day 1 starts tomorrow (30 Aug 2026).
+const START = "2026-08-30"; // Day 1 officially opens at 4:00 AM on 30 Aug 2026.
+const TRIAL_DATE = "2026-08-29"; // Trial day: entries are test-only and never count toward Day 1 streaks.
 const morning = [
   ["⏰","Wake-up target","No alarm required. Wake by today's target shown above."],
   ["🚿","Bath","Get ready for the day."],
@@ -436,7 +682,6 @@ try{
   db={days:{},microDone:0};
 }
 function save(){
-  if(!programStarted()) return;
   localStorage.setItem(key,JSON.stringify(db));
   if(window.cloudUser) scheduleCloudSync();
 }
@@ -649,30 +894,164 @@ document.getElementById("cloudSignUp").onclick=async()=>{
 document.getElementById("cloudSyncNow").onclick=async()=>{try{await syncToCloud();toast("Cloud sync complete ✓");}catch(e){cloudStatus("Cloud sync failed: "+(e.message||e));}};
 document.getElementById("cloudSignOut").onclick=async()=>{await supabaseClient.auth.signOut();toast("Signed out · local data remains safe");};
 
-function iso(d){return d.toISOString().slice(0,10)}
+function iso(d){
+  // Use the device's LOCAL calendar date, not UTC. This is important for
+  // users in India and other positive-offset time zones after midnight.
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,"0");
+  const day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
 function todayIso(){return iso(new Date())}
+function isTrialDay(){
+  return todayIso()==="2026-08-29" && new Date().getHours()<2;
+}
+function localIsoDate(d=new Date()){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function todayIso(){return localIsoDate(new Date());}
+function isTransitionWindow(){
+  const h=new Date().getHours();
+  return h>=2 && h<4;
+}
+function isBeforeDay1Start(){
+  const now=new Date(), ymd=localIsoDate(now);
+  if(ymd<START)return true;
+  if(ymd>START)return false;
+  return now.getHours()<4;
+}
 function logicalActivityDate(){
-  const now=new Date();
-  const h=now.getHours();
-  // The user's activity day closes at the scheduled shutdown time.
-  // Before 3:00 AM, treat the session as the previous activity date.
-  if(h<3) { const d=new Date(now); d.setDate(d.getDate()-1); return iso(d); }
-  return iso(now);
+  const now=new Date(), h=now.getHours();
+  if(h<4){
+    const d=new Date(now); d.setDate(d.getDate()-1); return localIsoDate(d);
+  }
+  return localIsoDate(now);
 }
-function programStarted(){ return todayIso() >= START; }
+
+function updateTrialBadge(){
+  const b=document.getElementById("trialBadge");
+  if(!b)return;
+  if(isTrialDay()){
+    b.textContent="Day 1 · 30 August 2026";
+    b.style.display="block";
+  }else{
+    b.textContent="";
+    b.style.display="none";
+  }
+}
+
+function canRecord(){
+  const now=new Date(), today=todayIso();
+  if(isTransitionWindow()) return false;
+  if(today==="2026-08-29") return true; // trial testing before 2 AM
+  if(today==="2026-08-30" && now.getHours()<4) return false;
+  return true;
+}
+function transitionLocked(){
+  return isTransitionWindow();
+}
+function transitionMessage(){
+  return {title:'Day starts at 4:00 AM',
+    text:'The activity day is locked between 2:00 AM and 4:00 AM.',
+    time:'Please come back after 4:00 AM.'};
+}
+function renderDayLock(){
+  // The 2–4 AM transition is intentionally shown only after the user tries an action.
+  return;
+}
+
 function dayNumber(){
-  const a=new Date(START+"T00:00:00");
-  const logical=logicalActivityDate();
-  const b=new Date(logical+"T00:00:00");
-  return Math.max(1,Math.floor((b-a)/86400000)+1);
+  const d=new Date(logicalActivityDate()+"T12:00:00");
+  const s=new Date(START+"T12:00:00");
+  return Math.max(1,Math.floor((d-s)/86400000)+1);
 }
-function dayKey(){return logicalActivityDate()}
+function dayKey(){
+  const now=new Date(), h=now.getHours();
+  if(h<2){
+    const d=new Date(now); d.setDate(d.getDate()-1); return localIsoDate(d);
+  }
+  return localIsoDate(now);
+}
+
+function resetForNewWorkingDay(){
+  const now=new Date(), h=now.getHours();
+  if(h<2) return;
+  const k=localIsoDate(now);
+  if(!db.days[k]) db.days[k]={};
+  // Never delete prior dates. The current calendar date is the fresh working state.
+  if(!db._workingResetDate || db._workingResetDate!==k){
+    db.days[k]={};
+    db._workingResetDate=k;
+    save();
+  }
+}
+
+
+/* Adaptive weekly calorie target:
+   Starts at 1700 kcal/day and adjusts only at weekly weigh-ins.
+   It does not automatically force the target below 1200 kcal/day.
+   Once 78 kg is reached, the target is held (maintenance mode). */
+const ADAPTIVE_START_KCAL=1700;
+const ADAPTIVE_MIN_KCAL=1200;
+const ADAPTIVE_TARGET_WEIGHT=78;
+
+function getLatestWeightEntry(){
+  const weights=(typeof db!=="undefined" && db.weights)?db.weights:{};
+  const keys=Object.keys(weights).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+  if(!keys.length)return null;
+  const k=keys[keys.length-1], v=Number(weights[k]);
+  return Number.isFinite(v)?{date:k,weight:v}:null;
+}
+function getPreviousWeightEntry(beforeDate){
+  const weights=(typeof db!=="undefined" && db.weights)?db.weights:{};
+  const keys=Object.keys(weights).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)&&k<beforeDate).sort();
+  if(!keys.length)return null;
+  const k=keys[keys.length-1], v=Number(weights[k]);
+  return Number.isFinite(v)?{date:k,weight:v}:null;
+}
+function getAdaptiveCalorieTarget(){
+  const latest=getLatestWeightEntry();
+  if(!latest)return ADAPTIVE_START_KCAL;
+  if(latest.weight<=ADAPTIVE_TARGET_WEIGHT)return Math.max(ADAPTIVE_MIN_KCAL, Math.round((db.adaptiveCalorieTarget||ADAPTIVE_START_KCAL)/50)*50);
+
+  let target=Number(db.adaptiveCalorieTarget||ADAPTIVE_START_KCAL);
+  const prev=getPreviousWeightEntry(latest.date);
+  if(!prev)return target;
+
+  const loss=prev.weight-latest.weight;
+  // If weekly loss is in a reasonable gradual range, hold calories.
+  // If loss is below ~0.25 kg, reduce by 100 kcal.
+  // If loss is above ~0.9 kg, increase by 100 kcal.
+  if(loss<0.25) target-=100;
+  else if(loss>0.9) target+=100;
+
+  target=Math.max(ADAPTIVE_MIN_KCAL,Math.min(ADAPTIVE_START_KCAL,target));
+  db.adaptiveCalorieTarget=target;
+  if(typeof save==="function")save();
+  return target;
+}
+function updateAdaptiveCalorieUI(){
+  const target=getAdaptiveCalorieTarget();
+  const label=document.getElementById("calorieStatus");
+  const inputLabels=document.querySelectorAll("#mealSection .section-title small");
+  if(label)label.textContent=`0 / ${target} kcal`;
+  document.querySelectorAll('[data-calorie-target]').forEach(el=>el.textContent=target);
+  const total=document.getElementById("caloriesEaten");
+  if(total){
+    const s=state(), eaten=Number(s.calories||0);
+    total.parentElement.innerHTML=`<span id="caloriesEaten">${eaten}</span> kcal <span class="note">EOD total</span>`;
+  }
+}
+
 function state(){
-  if(!programStarted()) return {};
-  const k=dayKey(); if(!db.days[k]) db.days[k]={};
+  resetForNewWorkingDay();
+  const k=dayKey();
+  if(!db.days[k]) db.days[k]={};
   return db.days[k];
 }
 function taskStreak(key){
+  if(isTrialDay()) return 0;
   let n=0;
   let d=new Date(dayKey()+"T00:00:00");
   // If today's task is not completed, show the active streak carried from
@@ -681,6 +1060,7 @@ function taskStreak(key){
   if(!todayState[key]) d.setDate(d.getDate()-1);
   while(true){
     const k=iso(d), st=db.days[k]||{};
+    if(k===TRIAL_DATE) break;
     if(!st[key]) break;
     n++;
     d.setDate(d.getDate()-1);
@@ -700,8 +1080,12 @@ function renderTasks(arr,id){
     const detail=(key==="night_shutdown")?`Stop all work at today's shutdown time.`:t[2];
     el.innerHTML=`<div class="icon">${t[0]}</div><div class="task-main"><div class="task-name">${displayName}</div><div class="task-detail">${detail}</div><div class="task-streak">🔥 <span>Streak: <strong>${taskStreak(key)} day${taskStreak(key)===1?"":"s"}</strong></span></div></div><button class="complete" type="button">${done?"✓ Done":"Complete"}</button>`;
     el.querySelector("button").onclick=()=>{
-      if(!programStarted()){
-        toast("Day 1 starts tomorrow · 30 Aug 2026");
+      if(isTransitionWindow()){
+        showTransitionOverlay();
+        return;
+      }
+      if(!canRecord()){
+        toast("Day starts at 4:00 AM");
         return;
       }
       const cur=state();
@@ -718,9 +1102,11 @@ function completed(arr){
   return arr.reduce((n,t)=>n+(st[t[1]]?1:0),0);
 }
 function streakFor(arr){
+  if(isTrialDay()) return 0;
   let n=0, d=new Date(dayKey()+"T00:00:00");
   while(true){
     const k=iso(d), st=db.days[k]||{};
+    if(k===TRIAL_DATE) break;
     const ok=arr.length>0 && arr.every(t=>!!st[t[1]]);
     if(!ok) break;
     n++; d.setDate(d.getDate()-1);
@@ -728,9 +1114,11 @@ function streakFor(arr){
   return n;
 }
 function overallStreak(){
+  if(isTrialDay()) return 0;
   let n=0, d=new Date(dayKey()+"T00:00:00");
   while(true){
-    const st=db.days[iso(d)]||{};
+    const k=iso(d), st=db.days[k]||{};
+    if(k===TRIAL_DATE) break;
     const ok=morning.every(t=>!!st[t[1]]) && night.every(t=>!!st[t[1]]);
     if(!ok) break;
     n++; d.setDate(d.getDate()-1);
@@ -751,9 +1139,12 @@ function renderCalories(){
 
 function greeting(){
   const h=new Date().getHours();
-  if(h<12) return ["Good morning, Azhar.","Let's win the morning first. One completed task at a time."];
-  if(h<18) return ["Good afternoon, Azhar.","Keep the day moving. One tiny action is enough."];
-  return ["Good evening, Azhar.","Protect tonight so tomorrow starts strong."];
+  const name=(localStorage.getItem("dailyCompass_profileName")||"").trim();
+  const prefix=h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+  const hello=name?`${prefix}, ${name}.`:`${prefix}.`;
+  if(h<12) return [hello,"Let's win the morning first. One completed task at a time."];
+  if(h<18) return [hello,"Keep the day moving. One tiny action is enough."];
+  return [hello,"Protect tonight so tomorrow starts strong."];
 }
 function microState(){ if(!db.microByDay) db.microByDay={}; if(!db.microByDay[dayKey()]) db.microByDay[dayKey()]=[]; return db.microByDay[dayKey()]; }
 function renderMicroStats(){
@@ -799,13 +1190,13 @@ function stepsTargetForDay(dno){
   return Math.min(8000, 3000 + Math.floor((dno-1)/10)*500);
 }
 
-function nextWeighInDate(){
-  const start=new Date(START+"T12:00:00");
-  const today=new Date(logicalActivityDate()+"T12:00:00");
-  const days=Math.max(0,Math.floor((today-start)/86400000));
-  const next=new Date(start);
-  next.setDate(start.getDate()+Math.ceil(days/7)*7);
-  return iso(next);
+function weeklyWeighDates(){
+  const d=new Date(logicalActivityDate()+"T12:00:00");
+  const daysSinceSunday=d.getDay(); // Sunday = 0
+  d.setDate(d.getDate()-daysSinceSunday);
+  const current=iso(d);
+  d.setDate(d.getDate()+7);
+  return {current,next:iso(d)};
 }
 function formatDateShort(k){
   return new Date(k+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
@@ -843,12 +1234,20 @@ function renderDashboard(){
   }
 }
 
+function previousActivitySteps(){
+  const d=new Date(logicalActivityDate()+"T12:00:00");
+  d.setDate(d.getDate()-1);
+  const k=localIsoDate(d);
+  return Number((db.days&&db.days[k]&&db.days[k].steps)||0);
+}
+
 function render(){
+  updateAdaptiveCalorieUI();
   const gr=greeting();
   document.getElementById("greeting").textContent=gr[0];
   document.getElementById("agentMessage").textContent=gr[1];
   renderMicroStats();
-  document.getElementById("dayNo").textContent=dayNumber();
+  document.getElementById("dayNo").textContent=isTrialDay()?"Trial Day":`Day ${dayNumber()}`;
   const st=state();
   const dno=dayNumber();
   const shutdown=shutdownTimes[Math.min(dno-1,shutdownTimes.length-1)];
@@ -864,20 +1263,27 @@ function render(){
   document.getElementById("wakeTime").textContent=wakeScheduleForDay(dno);
   document.getElementById("shutdownTime").textContent=st.shutdownTime;
   save();
-  document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  document.getElementById("today").textContent=new Date(logicalActivityDate()+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   const nowKey=todayIso();
-  document.getElementById("startNotice").textContent = nowKey < START ? "Day 1 starts tomorrow · 30 Aug 2026 · Tasks unlock tomorrow" : "";
+  const startNotice=document.getElementById("startNotice");
+  if(startNotice){
+    const nextDay=new Date(logicalActivityDate()+"T12:00:00");
+    nextDay.setDate(nextDay.getDate()+1);
+    const nextNo=dayNumber()+1;
+    const nextDate=nextDay.toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"});
+    startNotice.textContent=`Day ${nextNo} - ${nextDate} starts at 4 AM`;
+  }
   const stepTarget=stepsTargetForDay(dayNumber());
-  const nextW=nextWeighInDate(), weights=db.weights||{};
+  const weighDates=weeklyWeighDates(), currentW=weighDates.current, nextW=weighDates.next;
+  const weights=db.weights||{};
   const weightKeys=Object.keys(weights).sort();
   const lastW=weightKeys.length?weightKeys[weightKeys.length-1]:null;
-  document.getElementById("nextWeightDate").textContent=formatDateShort(nextW);
+  document.getElementById("currentWeightDate").textContent=formatDateShort(currentW);
+  document.getElementById("nextWeightDate").textContent=`${formatDateShort(nextW)} 2026`;
   document.getElementById("weightDayLabel").textContent=lastW?`${weights[lastW]} kg last logged`:"Weekly only";
-  document.getElementById("lastWeightText").textContent=lastW?`Last: ${formatDateShort(lastW)} · ${weights[lastW]} kg`:"No weight logged yet";
+  document.getElementById("lastWeightText").textContent=lastW?`${weights[lastW]} kg · ${formatDateShort(lastW)}`:"—";
   document.getElementById("weightInput").value="";
-  document.getElementById("weightScheduleText").textContent=lastW
-    ? `Last check: ${formatDateShort(lastW)} · Next check: ${formatDateShort(nextW)}`
-    : `First check: ${formatDateShort(nextW)} · Then every 7 days`;
+  document.getElementById("weightScheduleText").textContent=`Weekly weigh-in · ${formatDateShort(currentW)} → next ${formatDateShort(nextW)}`;
 
   document.getElementById("breakfastLabel").textContent="1️⃣ Breakfast · 8:00–9:15 AM";
   document.getElementById("lunchLabel").textContent="2️⃣ Lunch · 1:00–2:00 PM";
@@ -888,7 +1294,7 @@ function render(){
   const todaySteps=db.days[stepDate].steps||0;
   document.getElementById("stepsTarget").textContent=stepTarget.toLocaleString();
   document.getElementById("stepsTargetLabel").textContent=`Target ${stepTarget.toLocaleString()}`;
-  document.getElementById("stepsLogDate").textContent=new Date(stepDate+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+  document.getElementById("stepsLogDate").textContent=previousActivitySteps().toLocaleString();
   document.getElementById("stepsInput").value=todaySteps||"";
   document.getElementById("stepsBar").style.width=Math.min(100,todaySteps/stepTarget*100)+"%";
   renderTasks(morning,"morningTasks"); renderTasks(night,"nightTasks");
@@ -930,9 +1336,10 @@ document.getElementById("exhaustedBtn").onclick=()=>{
     }
   },1000);
 };
-document.getElementById("doneMicro").onclick=()=>finishMicro("done");
-document.getElementById("skipMicro").onclick=()=>finishMicro("skip");
+document.getElementById("doneMicro").onclick=()=>{if(transitionLocked()){showTransitionOverlay();return;} finishMicro("done")};
+document.getElementById("skipMicro").onclick=()=>{if(transitionLocked()){showTransitionOverlay();return;} finishMicro("skip")};
 document.getElementById("saveMeals").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   state().meals={
     breakfast:Number(document.getElementById("calBreakfast").value||0),
     lunch:Number(document.getElementById("calLunch").value||0),
@@ -942,21 +1349,25 @@ document.getElementById("saveMeals").onclick=()=>{
   save();render();toast("Today's calories saved ✓");
 };
 document.getElementById("resetCalories").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   state().meals={breakfast:0,lunch:0,snacks:0,dinner:0};
   save();render();toast("Today's calories reset");
 };
 document.getElementById("saveSteps").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   const d=logicalActivityDate();
   if(!db.days[d]) db.days[d]={};
   db.days[d].steps=Math.max(0,Number(document.getElementById("stepsInput").value||0));
   save();render();toast(`Steps saved for ${new Date(d+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"})} ✓`);
 };
 document.getElementById("resetSteps").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   const d=logicalActivityDate();
   if(!db.days[d]) db.days[d]={};
   db.days[d].steps=0;save();render();toast("Steps reset for this activity day");
 };
 document.getElementById("saveWeight").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   const v=Number(document.getElementById("weightInput").value);
   if(!v || v<30 || v>300){toast("Enter a valid weight in kg");return;}
   const d=logicalActivityDate();
@@ -965,15 +1376,86 @@ document.getElementById("saveWeight").onclick=()=>{
   save();render();toast(`Weight saved for ${formatDateShort(d)} ✓`);
 };
 document.getElementById("clearWeight").onclick=()=>{
+  if(transitionLocked()){showTransitionOverlay();return;}
   const d=logicalActivityDate();
   if(db.weights && db.weights[d]!==undefined){delete db.weights[d];save();render();toast("This week's weight entry cleared");}
 };
 
 document.getElementById("dashMenu").onclick=()=>{document.getElementById("dashboard").classList.add("open");document.getElementById("dashBackdrop").classList.add("open");renderDashboard();};
 document.getElementById("dashClose").onclick=()=>{document.getElementById("dashboard").classList.remove("open");document.getElementById("dashBackdrop").classList.remove("open");};
-document.getElementById("dashBackdrop").onclick=()=>{document.getElementById("dashboard").classList.remove("open");document.getElementById("dashBackdrop").classList.remove("open");};
+document.getElementById("dashBackdrop").onclick=()=>{document.getElementById("dashboard").classList.remove("open");document.getElementById("dashBackdrop").classList.remove
+("open");};
 render();
 initCloud();
+
+/* Final trial / transition / profile controls */
+function getProfileName(){return (localStorage.getItem("dailyCompass_profileName")||"").trim();}
+function setProfileName(name){
+  const clean=String(name||"").trim().slice(0,40);
+  if(clean)localStorage.setItem("dailyCompass_profileName",clean);
+  else localStorage.removeItem("dailyCompass_profileName");
+  updateGreeting();
+}
+function updateGreeting(){
+  const el=document.getElementById("greeting");if(!el)return;
+  const name=getProfileName();
+  const h=new Date().getHours();
+  const prefix=h<12?"Good morning":h<18?"Good afternoon":"Good evening";
+  el.textContent=name?`${prefix}, ${name}.`:`${prefix}.`;
+}
+function showTransitionOverlay(){
+  const ov=document.getElementById("transitionOverlay");if(!ov)return;
+  ov.classList.add("show");updateTransitionCountdown();
+}
+function updateTransitionCountdown(){
+  const ov=document.getElementById("transitionOverlay");
+  if(!ov||!ov.classList.contains("show"))return;
+  const now=new Date();
+  if(now.getHours()>=4){ov.classList.remove("show");return;}
+  const target=new Date(now);target.setHours(4,0,0,0);
+  const total=Math.max(0,Math.ceil((target-now)/1000));
+  const hh=Math.floor(total/3600),mm=Math.floor((total%3600)/60),ss=total%60;
+  const el=document.getElementById("waitCountdown");
+  if(el)el.textContent=`${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+  const start2=new Date(now);start2.setHours(2,0,0,0);
+  const fill=document.getElementById("waitFill");
+  if(fill)fill.style.width=`${Math.min(100,Math.max(0,(now-start2)/7200000*100))}%`;
+  setTimeout(updateTransitionCountdown,1000);
+}
+function closeTransitionOverlay(){
+  const ov=document.getElementById("transitionOverlay");if(ov)ov.classList.remove("show");
+}
+const waitClose=document.getElementById("waitClose");if(waitClose)waitClose.onclick=closeTransitionOverlay;
+const waitX=document.getElementById("waitX");if(waitX)waitX.onclick=closeTransitionOverlay;
+(function(){
+  const input=document.getElementById("profileName");
+  if(input){
+    input.value=getProfileName();
+    input.addEventListener("change",()=>setProfileName(input.value));
+    input.addEventListener("blur",()=>setProfileName(input.value));
+  }
+  updateGreeting();
+  updateTrialBadge();
+})();
+window.addEventListener("click",function(e){
+  if(!isTransitionWindow())return;
+  const target=e.target.closest("button,input,select,textarea");
+  if(!target||target.closest("#transitionOverlay")||target.closest("#dashboard")||target.closest("#dashMenu"))return;
+  e.preventDefault();e.stopImmediatePropagation();showTransitionOverlay();
+},true);
+
+(function(){
+  ["saveSteps","saveMeals","saveWeight","resetSteps","resetCalories","clearWeight","doneMicro","skipMicro"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener("click",function(e){
+      if(isTransitionWindow()){
+        e.preventDefault();e.stopImmediatePropagation();showTransitionOverlay();
+      }
+    },true);
+  });
+})();
+
 </script>
 
 
@@ -981,6 +1463,70 @@ initCloud();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js"));
 }
+
+/* CSV history export */
+function csvCell(v){
+  const s=String(v==null?"":v);
+  return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function downloadMyDataCSV(){
+  const rows=[[
+    "Date","Day","Steps Achieved","Steps Target","Calories Intake (kcal)","Calories Target (kcal)",
+    "Morning Tasks Completed","Morning Tasks Total","Night Tasks Completed","Night Tasks Total",
+    "Micro Tasks Done","Micro Tasks Skipped","Micro Tasks Total"
+  ]];
+
+  const source=(typeof db!=="undefined" && db.days)?db.days:{};
+  const dates=Object.keys(source).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k)).sort();
+
+  dates.forEach(date=>{
+    const s=source[date]||{};
+    const morning=Array.isArray(s.morning)?s.morning:[];
+    const night=Array.isArray(s.night)?s.night:[];
+    const steps=Number(s.steps||0);
+    const stepTarget=Number(
+      s.stepTarget ?? s.stepsTarget ?? s.targetSteps ??
+      (typeof getStepsTargetForDate==="function"?getStepsTargetForDate(date):0) ?? 0
+    );
+    const calories=Number(s.calories ?? s.calorieTotal ?? s.caloriesEaten ?? 0);
+    const calorieTarget=Number(s.calorieTarget ?? s.caloriesTarget ?? 1700);
+    const morningDone=morning.filter(Boolean).length;
+    const nightDone=night.filter(Boolean).length;
+    const microDone=Number(s.microDone||0);
+    const microSkip=Number(s.microSkip||0);
+    const microTotal=microDone+microSkip;
+
+    let dayLabel="";
+    if(date==="2026-08-29") dayLabel="Trial Day";
+    else if(typeof dayNumberForDate==="function") dayLabel=`Day ${dayNumberForDate(date)}`;
+    else if(date==="2026-08-30") dayLabel="Day 1";
+
+    rows.push([
+      date,dayLabel,steps,stepTarget,calories,calorieTarget,
+      morningDone,4,nightDone,4,microDone,microSkip,microTotal
+    ]);
+  });
+
+  const csv="\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`daily-compass-history-${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const status=document.getElementById("exportStatus");
+  if(status)status.textContent=`Downloaded ${dates.length} day(s) of history as CSV.`;
+  if(typeof toast==="function")toast("My data downloaded");
+}
+const exportBtn=document.getElementById("downloadMyData");
+if(exportBtn)exportBtn.addEventListener("click",downloadMyDataCSV);
+
 </script>
 </body>
 </html>
+
+<style>.hero .streaks{margin-top:20px;border-top:0!important;box-shadow:none!important}</style>
