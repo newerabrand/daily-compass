@@ -301,9 +301,83 @@
 
 #weightSection #weightInput:disabled,#weightSection #saveWeight:disabled,#weightSection #clearWeight:disabled{opacity:.5!important;cursor:not-allowed!important;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const input = document.getElementById("profileName");
+  const saveBtn = document.getElementById("saveProfileName");
+  const editBtn = document.getElementById("editProfileName");
+  const status = document.getElementById("profileSaveStatus");
 
-(function(){ const input=document.getElementById("profileName"); const btn=document.getElementById("saveProfileName"); const editBtn=document.getElementById("editProfileName"); const status=document.getElementById("profileSaveStatus"); if(!input||!btn||!editBtn)return; function savedName(){return (localStorage.getItem("dailyCompass_profileName")||"").trim();} function viewMode(){ input.value=savedName(); input.readOnly=true; btn.disabled=true; btn.textContent="SAVED ✓"; editBtn.disabled=false; } function editMode(){ input.readOnly=false; input.focus(); input.select(); btn.disabled=false; btn.textContent="SAVE PROFILE"; editBtn.disabled=true; } viewMode(); editBtn.addEventListener("click",function(){ editMode(); if(status){status.classList.remove("profile-save-success");status.textContent="Edit your name, then save it.";} }); btn.addEventListener("click",function(){ const name=input.value.trim(); if(!name){if(status)status.textContent="Enter a profile name first.";return;} setProfileName(name); viewMode(); if(status){status.classList.add("profile-save-success");status.textContent="Your name is saved";} if(typeof toast==="function")toast("Your name is saved"); }); })();
+  if(!input || !saveBtn || !editBtn) return;
+
+  function showSaved(){
+    input.value = getProfileName();
+    input.readOnly = true;
+    saveBtn.disabled = true;
+    saveBtn.textContent = "SAVED ✓";
+    editBtn.disabled = false;
+  }
+
+  function showEdit(){
+    input.readOnly = false;
+    saveBtn.disabled = false;
+    saveBtn.textContent = "SAVE PROFILE";
+    editBtn.disabled = true;
+    input.focus();
+    input.select();
+  }
+
+  showSaved();
+
+  editBtn.addEventListener("click", function(){
+    showEdit();
+    if(status){
+      status.textContent = "Edit your name, then save it.";
+    }
+  });
+
+  saveBtn.addEventListener("click", function(){
+    const name = input.value.trim();
+
+    if(!name){
+      if(status){
+        status.textContent = "Enter your name first.";
+      }
+      input.focus();
+      return;
+    }
+
+    setProfileName(name);
+    showSaved();
+    updateGreeting();
+
+    if(status){
+      status.textContent = "Your name is saved";
+    }
+
+    if(typeof toast === "function"){
+      toast("Your name is saved");
+    }
+  });
+
+  input.addEventListener("keydown", function(e){
+    if(e.key === "Enter" && !input.readOnly){
+      e.preventDefault();
+      saveBtn.click();
+    }
+
+    if(e.key === "Escape" && !input.readOnly){
+      e.preventDefault();
+      showSaved();
+
+      if(status){
+        status.textContent = "Edit cancelled.";
+      }
+    }
+  });
+
+});
 
 
 setInterval(render,1000);
