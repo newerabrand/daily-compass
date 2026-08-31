@@ -312,12 +312,24 @@ document.addEventListener("DOMContentLoaded", function(){
   if(!input || !saveBtn || !editBtn) return;
 
   function showSaved(){
-    input.value = getProfileName();
+  const saved = getProfileName();
+
+  input.value = saved;
+
+  if(saved){
+    // Name already saved
     input.readOnly = true;
     saveBtn.disabled = true;
     saveBtn.textContent = "SAVED ✓";
     editBtn.disabled = false;
+  }else{
+    // First time — allow typing
+    input.readOnly = false;
+    saveBtn.disabled = false;
+    saveBtn.textContent = "SAVE PROFILE";
+    editBtn.disabled = true;
   }
+}
 
   function showEdit(){
     input.readOnly = false;
